@@ -1,6 +1,6 @@
 # Connected Web Artwork
 
-Files for the Connected Web website, including images and profile materials.
+Artwork for the Connected Web website, including images and profile materials.
 
 ## Logos
 
