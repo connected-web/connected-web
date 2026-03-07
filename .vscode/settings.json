@@ -1,0 +1,11 @@
+{
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#45568B",
+        "statusBar.foreground": "#ffffff",
+        "titleBar.activeBackground": "#35466B",
+        "titleBar.activeForeground": "#ffffff",
+        "activityBar.background": "#28385B",
+        "activityBar.foreground": "#ffffff"
+    },
+    "window.title": "🟦 connected-web - ${activeEditorShort}"
+}
