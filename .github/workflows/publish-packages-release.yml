@@ -1,0 +1,53 @@
+name: Publish Packages Release
+
+on:
+  release:
+    types:
+      - published
+      - prereleased
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node JS LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: '@connected-web'
+
+      - name: Derive version and tag from release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DIST_TAG="latest"
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            DIST_TAG="next"
+          fi
+          echo "RELEASE_VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "DIST_TAG=${DIST_TAG}" >> "$GITHUB_ENV"
+
+      - name: Apply release version
+        run: npm --prefix ./packages/assets version "$RELEASE_VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Install package dependencies
+        run: npm install
+        working-directory: ./packages/assets
+
+      - name: Build assets package
+        run: npm run build
+        working-directory: ./packages/assets
+
+      - name: Publish assets release package
+        run: npm publish --tag "$DIST_TAG"
+        working-directory: ./packages/assets

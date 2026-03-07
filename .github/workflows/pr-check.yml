@@ -1,0 +1,33 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/assets/**'
+      - 'site/images/**'
+      - 'scripts/assets/**'
+      - '.github/workflows/pr-check.yml'
+      - '.github/workflows/publish-packages-pr.yml'
+      - '.github/workflows/publish-packages-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assets-package-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node JS LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run assets package check
+        run: ./scripts/assets/check-package.sh
