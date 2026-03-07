@@ -1,9 +1,13 @@
 import faviconHref from '@connected-web/assets/favicon.ico';
 import gradientLargeHref from '@connected-web/assets/connected-web-gradient-large.png';
+import gradient32Href from '@connected-web/assets/connected-web-gradient-32.png';
+import gradient64Href from '@connected-web/assets/connected-web-gradient-64.png';
 import gradient128Href from '@connected-web/assets/connected-web-gradient-128.png';
 import gradient256Href from '@connected-web/assets/connected-web-gradient-256.png';
 import gradient512Href from '@connected-web/assets/connected-web-gradient-512.png';
 import flatLargeHref from '@connected-web/assets/connected-web-flat-large.png';
+import flat32Href from '@connected-web/assets/connected-web-flat-32.png';
+import flat64Href from '@connected-web/assets/connected-web-flat-64.png';
 import flat128Href from '@connected-web/assets/connected-web-flat-128.png';
 import flat256Href from '@connected-web/assets/connected-web-flat-256.png';
 import flat512Href from '@connected-web/assets/connected-web-flat-512.png';
@@ -21,26 +25,32 @@ document.body.style.background = '#f4f7fb';
 document.body.style.color = '#1b2a41';
 
 const assetCards = [
-  { label: 'Gradient large', href: gradientLargeHref, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Gradient 512', href: gradient512Href, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Gradient 256', href: gradient256Href, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Gradient 128', href: gradient128Href, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Flat large', href: flatLargeHref, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Flat 512', href: flat512Href, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Flat 256', href: flat256Href, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Flat 128', href: flat128Href, tone: '#f8fbfe', fit: 'contain' },
-  { label: 'Favicon', href: faviconHref, tone: '#ffffff', fit: 'contain', size: 64 }
+  { label: 'Gradient large', href: gradientLargeHref, size: 160 },
+  { label: 'Gradient 512', href: gradient512Href, size: 160 },
+  { label: 'Gradient 256', href: gradient256Href, size: 160 },
+  { label: 'Gradient 128', href: gradient128Href, size: 128 },
+  { label: 'Gradient 64', href: gradient64Href, size: 64 },
+  { label: 'Gradient 32', href: gradient32Href, size: 32 },
+  { label: 'Flat large', href: flatLargeHref, size: 160 },
+  { label: 'Flat 512', href: flat512Href, size: 160 },
+  { label: 'Flat 256', href: flat256Href, size: 160 },
+  { label: 'Flat 128', href: flat128Href, size: 128 },
+  { label: 'Flat 64', href: flat64Href, size: 64 },
+  { label: 'Flat 32', href: flat32Href, size: 32 },
+  { label: 'Favicon', href: faviconHref, size: 16, tone: '#ffffff' }
 ];
 
 const debugPayload = {
   manifestUrl,
   assetKeys: Object.keys(assetMap),
-  samples: Object.fromEntries(Object.entries(assetMap).slice(0, 4))
+  samples: Object.fromEntries(Object.entries(assetMap).slice(0, 6))
 };
 
-const galleryMarkup = assetCards.map(({ label, href, tone, fit, size = 160 }) => `
-  <figure style="margin:0;padding:16px;border:1px solid #e3ebf4;border-radius:16px;background:${tone};text-align:center;">
-    <img src="${href}" alt="${label}" style="width:${size}px;max-width:100%;aspect-ratio:1 / 1;object-fit:${fit};display:block;margin:0 auto 12px;" />
+const galleryMarkup = assetCards.map(({ label, href, size, tone = '#f8fbfe' }) => `
+  <figure style="margin:0;padding:16px;border:1px solid #e3ebf4;border-radius:16px;background:${tone};text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:180px;">
+    <div style="width:100%;min-height:96px;display:flex;align-items:center;justify-content:center;">
+      <img src="${href}" alt="${label}" style="width:${size}px;max-width:100%;aspect-ratio:1 / 1;object-fit:contain;display:block;image-rendering:auto;" />
+    </div>
     <figcaption style="font-size:14px;color:#4a6078;">${label}</figcaption>
   </figure>
 `).join('');

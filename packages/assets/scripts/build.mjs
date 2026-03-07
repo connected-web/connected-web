@@ -17,13 +17,13 @@ const baseAssets = [
     source: 'connected-web-gradient-large.png',
     output: 'connected-web-gradient-large.png',
     kind: 'image',
-    variants: [128, 256, 512]
+    variants: [32, 64, 128, 256, 512]
   },
   {
     source: 'connected-web-flat-large.png',
     output: 'connected-web-flat-large.png',
     kind: 'image',
-    variants: [128, 256, 512]
+    variants: [32, 64, 128, 256, 512]
   }
 ];
 

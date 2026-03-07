@@ -29,7 +29,7 @@ import { assets, manifestUrl } from '@connected-web/assets';
 - `favicon.ico`
 - `connected-web-gradient-large.png`
 - `connected-web-flat-large.png`
-- Generated PNG variants for the large logos at `128`, `256`, and `512` square resolution when the source image is large enough.
+- Generated PNG variants for the large logos at `32`, `64`, `128`, `256`, and `512` square resolution when the source image is large enough.
 
 ## Build
 
