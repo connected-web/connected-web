@@ -218,8 +218,8 @@ jobs:
           document.body.style.color = '#1b2a41';
 
           document.querySelector('#app').innerHTML = `
-            <main style="min-height:100vh;display:grid;place-items:center;padding:32px;">
-              <section style="width:min(960px,100%);background:rgba(255,255,255,0.88);backdrop-filter:blur(10px);border:1px solid rgba(27,42,65,0.12);border-radius:24px;padding:32px;box-shadow:0 24px 80px rgba(32,57,90,0.18);">
+            <main style="min-height:100vh;display:grid;place-items:center;padding:24px;">
+              <section style="width:min(880px,100%);background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);border:1px solid rgba(27,42,65,0.12);border-radius:24px;padding:28px;box-shadow:0 24px 80px rgba(32,57,90,0.18);">
                 <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#4f6b8a;">Consumer smoke test</p>
                 <h1 style="margin:0 0 12px;font-size:40px;line-height:1;">Connected Web assets from GitHub Packages</h1>
                 <p style="margin:0 0 24px;font-size:18px;max-width:60ch;color:#355070;">This page imports the published dev package via Vite and renders both direct file exports and the helper manifest interface.</p>
@@ -237,7 +237,7 @@ jobs:
                     <figcaption>Direct import: flat 256</figcaption>
                   </figure>
                 </div>
-                <pre id="interface-dump" style="margin:24px 0 0;padding:16px;border-radius:16px;background:#1b2a41;color:#f8fbff;overflow:auto;font-size:13px;line-height:1.5;">${JSON.stringify({ faviconHref, manifestUrl, assetMap }, null, 2)}</pre>
+                <pre id="interface-dump" style="margin:24px 0 0;padding:16px;border-radius:16px;background:#1b2a41;color:#f8fbff;overflow:auto;font-size:13px;line-height:1.5;max-height:180px;">${JSON.stringify({ faviconHref, manifestUrl, assetKeys: Object.keys(assetMap) }, null, 2)}</pre>
               </section>
             </main>
           `;
@@ -251,9 +251,9 @@ jobs:
           await mkdir(outDir, { recursive: true });
 
           const browser = await chromium.launch({ headless: true });
-          const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
+          const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
           await page.goto('http://127.0.0.1:4173', { waitUntil: 'networkidle' });
-          await page.screenshot({ path: new URL('./artifacts/assets-consumer.png', import.meta.url).pathname, fullPage: true });
+          await page.locator('section').screenshot({ path: new URL('./artifacts/assets-consumer.png', import.meta.url).pathname });
           const payload = {
             title: await page.title(),
             h1: await page.locator('h1').textContent(),
