@@ -1,0 +1,16 @@
+{
+  "name": "assets-consumer-smoke-test",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173"
+  },
+  "dependencies": {
+    "@connected-web/assets": "__DEV_VERSION__"
+  },
+  "devDependencies": {
+    "playwright": "^1.54.2",
+    "vite": "^7.1.3"
+  }
+}
