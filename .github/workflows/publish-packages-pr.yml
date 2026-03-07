@@ -30,6 +30,9 @@ jobs:
   publish-dev:
     if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
+    outputs:
+      assets_changed: ${{ steps.changes.outputs.assets }}
+      dev_version: ${{ steps.dev-version.outputs.dev_version }}
     env:
       NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -56,10 +59,12 @@ jobs:
           scope: '@connected-web'
 
       - name: Set dev version from commit hash
+        id: dev-version
         run: |
           SHORT_SHA="$(printf '%s' "${GITHUB_SHA}" | cut -c1-12)"
           DEV_VERSION="0.0.0-dev-${SHORT_SHA}"
           echo "DEV_VERSION=${DEV_VERSION}" >> "$GITHUB_ENV"
+          echo "dev_version=${DEV_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Apply package version
         if: ${{ inputs.force_publish || steps.changes.outputs.assets == 'true' }}
@@ -135,3 +140,171 @@ jobs:
                 body
               })
             }
+
+  consumer-smoke-test:
+    needs: publish-dev
+    if: ${{ needs.publish-dev.outputs.assets_changed == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      DEV_VERSION: ${{ needs.publish-dev.outputs.dev_version }}
+      NODE_AUTH_TOKEN: ${{ secrets.CONNECTED_WEB_PACKAGES_TOKEN != '' && secrets.CONNECTED_WEB_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node JS LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: '@connected-web'
+
+      - name: Create consumer test harness
+        run: |
+          mkdir -p ./tmp/assets-consumer/src
+          cat > ./tmp/assets-consumer/package.json <<JSON
+          {
+            "name": "assets-consumer-smoke-test",
+            "private": true,
+            "type": "module",
+            "scripts": {
+              "build": "vite build",
+              "preview": "vite preview --host 127.0.0.1 --port 4173"
+            },
+            "dependencies": {
+              "@connected-web/assets": "${DEV_VERSION}"
+            },
+            "devDependencies": {
+              "playwright": "^1.54.2",
+              "vite": "^7.1.3"
+            }
+          }
+          JSON
+
+          cat > ./tmp/assets-consumer/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Connected Web Assets Consumer</title>
+              <script type="module" src="/src/main.js"></script>
+            </head>
+            <body>
+              <div id="app"></div>
+            </body>
+          </html>
+          HTML
+
+          cat > ./tmp/assets-consumer/src/main.js <<'JS'
+          import faviconHref from '@connected-web/assets/favicon.ico';
+          import gradientLargeHref from '@connected-web/assets/connected-web-gradient-large.png';
+          import gradient256Href from '@connected-web/assets/connected-web-gradient-256.png';
+          import flat256Href from '@connected-web/assets/connected-web-flat-256.png';
+          import assetMap, { manifestUrl } from '@connected-web/assets';
+
+          const faviconLink = document.createElement('link');
+          faviconLink.rel = 'icon';
+          faviconLink.href = faviconHref;
+          document.head.appendChild(faviconLink);
+
+          document.body.style.margin = '0';
+          document.body.style.fontFamily = 'ui-sans-serif, system-ui, sans-serif';
+          document.body.style.background = 'linear-gradient(135deg, #f5f7fb 0%, #dde7f5 100%)';
+          document.body.style.color = '#1b2a41';
+
+          document.querySelector('#app').innerHTML = `
+            <main style="min-height:100vh;display:grid;place-items:center;padding:32px;">
+              <section style="width:min(960px,100%);background:rgba(255,255,255,0.88);backdrop-filter:blur(10px);border:1px solid rgba(27,42,65,0.12);border-radius:24px;padding:32px;box-shadow:0 24px 80px rgba(32,57,90,0.18);">
+                <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#4f6b8a;">Consumer smoke test</p>
+                <h1 style="margin:0 0 12px;font-size:40px;line-height:1;">Connected Web assets from GitHub Packages</h1>
+                <p style="margin:0 0 24px;font-size:18px;max-width:60ch;color:#355070;">This page imports the published dev package via Vite and renders both direct file exports and the helper manifest interface.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;align-items:start;">
+                  <figure style="margin:0;display:grid;gap:12px;justify-items:center;background:#f8fbff;border-radius:20px;padding:20px;">
+                    <img src="${gradientLargeHref}" alt="Connected Web gradient large" style="width:180px;height:180px;object-fit:contain;" />
+                    <figcaption>Direct import: gradient large</figcaption>
+                  </figure>
+                  <figure style="margin:0;display:grid;gap:12px;justify-items:center;background:#f8fbff;border-radius:20px;padding:20px;">
+                    <img src="${gradient256Href}" alt="Connected Web gradient 256" style="width:180px;height:180px;object-fit:contain;" />
+                    <figcaption>Direct import: gradient 256</figcaption>
+                  </figure>
+                  <figure style="margin:0;display:grid;gap:12px;justify-items:center;background:#f8fbff;border-radius:20px;padding:20px;">
+                    <img src="${flat256Href}" alt="Connected Web flat 256" style="width:180px;height:180px;object-fit:contain;" />
+                    <figcaption>Direct import: flat 256</figcaption>
+                  </figure>
+                </div>
+                <pre id="interface-dump" style="margin:24px 0 0;padding:16px;border-radius:16px;background:#1b2a41;color:#f8fbff;overflow:auto;font-size:13px;line-height:1.5;">${JSON.stringify({ faviconHref, manifestUrl, assetMap }, null, 2)}</pre>
+              </section>
+            </main>
+          `;
+          JS
+
+          cat > ./tmp/assets-consumer/smoke-test.mjs <<'JS'
+          import { mkdir, writeFile } from 'node:fs/promises';
+          import { chromium } from 'playwright';
+
+          const outDir = new URL('./artifacts/', import.meta.url);
+          await mkdir(outDir, { recursive: true });
+
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
+          await page.goto('http://127.0.0.1:4173', { waitUntil: 'networkidle' });
+          await page.screenshot({ path: new URL('./artifacts/assets-consumer.png', import.meta.url).pathname, fullPage: true });
+          const payload = {
+            title: await page.title(),
+            h1: await page.locator('h1').textContent(),
+            imageCount: await page.locator('img').count(),
+            interfaceDump: await page.locator('#interface-dump').textContent()
+          };
+          await writeFile(new URL('./artifacts/assertions.json', import.meta.url), `${JSON.stringify(payload, null, 2)}\n`);
+          await browser.close();
+          JS
+
+      - name: Install consumer dependencies
+        run: npm install
+        working-directory: ./tmp/assets-consumer
+
+      - name: Inspect installed package contents
+        run: |
+          PACKAGE_DIR="./tmp/assets-consumer/node_modules/@connected-web/assets"
+          find "$PACKAGE_DIR" -maxdepth 2 -type f | sort
+          node --input-type=module <<'NODE'
+          import assets, { manifestUrl } from './tmp/assets-consumer/node_modules/@connected-web/assets/src/index.js';
+          console.log(JSON.stringify({ manifestUrl, assetKeys: Object.keys(assets) }, null, 2));
+          NODE
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+        working-directory: ./tmp/assets-consumer
+
+      - name: Build consumer site
+        run: npm run build
+        working-directory: ./tmp/assets-consumer
+
+      - name: Capture consumer screenshot
+        run: |
+          npm run preview > /tmp/assets-consumer-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID' EXIT
+          for _ in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4173 > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          node ./smoke-test.mjs
+        working-directory: ./tmp/assets-consumer
+
+      - name: Upload consumer artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: assets-consumer-smoke-test-${{ env.DEV_VERSION }}
+          path: |
+            ./tmp/assets-consumer/artifacts/assets-consumer.png
+            ./tmp/assets-consumer/artifacts/assertions.json
+            /tmp/assets-consumer-preview.log
+          if-no-files-found: error
