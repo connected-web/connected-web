@@ -1,0 +1,137 @@
+name: Publish Packages PR Dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_publish:
+        description: 'Publish even if no package files changed'
+        required: false
+        type: boolean
+        default: false
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/**'
+      - 'site/images/**'
+      - '.github/workflows/publish-packages-pr.yml'
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+
+jobs:
+  publish-dev:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect package changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            assets:
+              - 'packages/assets/**'
+              - 'site/images/favicon.ico'
+              - 'site/images/connected-web-gradient-large.png'
+              - 'site/images/connected-web-flat-large.png'
+
+      - name: Use Node JS LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: '@connected-web'
+
+      - name: Set dev version from commit hash
+        run: |
+          SHORT_SHA="$(printf '%s' "${GITHUB_SHA}" | cut -c1-12)"
+          DEV_VERSION="0.0.0-dev-${SHORT_SHA}"
+          echo "DEV_VERSION=${DEV_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Apply package version
+        if: ${{ inputs.force_publish || steps.changes.outputs.assets == 'true' }}
+        run: npm --prefix ./packages/assets version "$DEV_VERSION" --no-git-tag-version
+
+      - name: Install package dependencies
+        if: ${{ inputs.force_publish || steps.changes.outputs.assets == 'true' }}
+        run: npm install
+        working-directory: ./packages/assets
+
+      - name: Build assets package
+        if: ${{ inputs.force_publish || steps.changes.outputs.assets == 'true' }}
+        run: npm run build
+        working-directory: ./packages/assets
+
+      - name: Publish assets dev package
+        if: ${{ inputs.force_publish || steps.changes.outputs.assets == 'true' }}
+        run: |
+          if npm view "@connected-web/assets@${DEV_VERSION}" version --registry https://npm.pkg.github.com > /dev/null 2>&1; then
+            echo "@connected-web/assets@${DEV_VERSION} already exists, skipping"
+          else
+            npm publish --tag dev
+          fi
+          LATEST_TAG="$(npm view @connected-web/assets dist-tags.latest --registry https://npm.pkg.github.com 2>/dev/null || true)"
+          if [ "${LATEST_TAG}" = "${DEV_VERSION}" ]; then
+            npm dist-tag rm @connected-web/assets latest --registry https://npm.pkg.github.com || true
+          fi
+        working-directory: ./packages/assets
+
+      - name: Comment PR with dev install instructions
+        if: github.event_name == 'pull_request' && (inputs.force_publish || steps.changes.outputs.assets == 'true')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- connected-web-dev-packages -->'
+            const body = `${marker}
+            ## Dev Package Published
+
+            Version: \`${process.env.DEV_VERSION}\`
+
+            Install command:
+            \`\`\`bash
+            npm install @connected-web/assets@${process.env.DEV_VERSION}
+            \`\`\`
+
+            Registry setup:
+            \`\`\`bash
+            npm config set @connected-web:registry https://npm.pkg.github.com
+            \`\`\`
+            `
+
+            const { owner, repo } = context.repo
+            const issue_number = context.issue.number
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100
+            })
+            const existing = comments.find(c => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body
+              })
+            }

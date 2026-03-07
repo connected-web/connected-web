@@ -1,0 +1,44 @@
+{
+  "name": "@connected-web/assets",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "files": [
+    "dist",
+    "src/index.js",
+    "src/index.d.ts",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./manifest.json": "./dist/manifest.json",
+    "./favicon.ico": "./dist/favicon.ico",
+    "./connected-web-gradient-large.png": "./dist/connected-web-gradient-large.png",
+    "./connected-web-flat-large.png": "./dist/connected-web-flat-large.png",
+    "./connected-web-gradient-128.png": "./dist/connected-web-gradient-128.png",
+    "./connected-web-gradient-256.png": "./dist/connected-web-gradient-256.png",
+    "./connected-web-gradient-512.png": "./dist/connected-web-gradient-512.png",
+    "./connected-web-flat-128.png": "./dist/connected-web-flat-128.png",
+    "./connected-web-flat-256.png": "./dist/connected-web-flat-256.png",
+    "./connected-web-flat-512.png": "./dist/connected-web-flat-512.png"
+  },
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "prepack": "npm run build"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.4"
+  }
+}
