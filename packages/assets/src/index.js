@@ -15,6 +15,7 @@ export const assets = {
   flat256: toAssetUrl('../dist/connected-web-flat-256.png'),
   flat512: toAssetUrl('../dist/connected-web-flat-512.png'),
   maskableLarge: toAssetUrl('../dist/connected-web-maskable-large.png'),
+  maskable180: toAssetUrl('../dist/connected-web-maskable-180.png'),
   maskable192: toAssetUrl('../dist/connected-web-maskable-192.png'),
   maskable512: toAssetUrl('../dist/connected-web-maskable-512.png')
 };

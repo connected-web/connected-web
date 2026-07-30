@@ -32,6 +32,7 @@
     "./connected-web-flat-256.png": "./dist/connected-web-flat-256.png",
     "./connected-web-flat-512.png": "./dist/connected-web-flat-512.png",
     "./connected-web-maskable-large.png": "./dist/connected-web-maskable-large.png",
+    "./connected-web-maskable-180.png": "./dist/connected-web-maskable-180.png",
     "./connected-web-maskable-192.png": "./dist/connected-web-maskable-192.png",
     "./connected-web-maskable-512.png": "./dist/connected-web-maskable-512.png"
   },

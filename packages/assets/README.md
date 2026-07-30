@@ -81,7 +81,7 @@ document.querySelector('#app').innerHTML = `
 - `connected-web-maskable-large.png`, with the brand mark centred at 70% of
   the canvas on an opaque `#e7f2fc` background.
 - Generated PNG variants for the large logos at `32`, `64`, `128`, `256`, and `512` square resolution when the source image is large enough.
-- Maskable PWA PNG variants at `192` and `512` square resolution.
+- Maskable PWA PNG variants at `180`, `192`, and `512` square resolution.
 
 ## Build
 

@@ -22,6 +22,7 @@ test -f ./dist/connected-web-flat-128.png
 test -f ./dist/connected-web-flat-256.png
 test -f ./dist/connected-web-flat-512.png
 test -f ./dist/connected-web-maskable-large.png
+test -f ./dist/connected-web-maskable-180.png
 test -f ./dist/connected-web-maskable-192.png
 test -f ./dist/connected-web-maskable-512.png
 test -f ./dist/manifest.json
@@ -44,6 +45,7 @@ const requiredKeys = [
   'flat256',
   'flat512',
   'maskableLarge',
+  'maskable180',
   'maskable192',
   'maskable512'
 ];

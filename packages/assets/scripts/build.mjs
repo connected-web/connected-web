@@ -29,7 +29,7 @@ const baseAssets = [
     source: 'connected-web-gradient-large.png',
     output: 'connected-web-maskable-large.png',
     kind: 'maskable',
-    variants: [192, 512]
+    variants: [180, 192, 512]
   }
 ];
 
