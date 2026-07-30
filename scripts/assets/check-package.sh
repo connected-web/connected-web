@@ -21,6 +21,9 @@ test -f ./dist/connected-web-flat-64.png
 test -f ./dist/connected-web-flat-128.png
 test -f ./dist/connected-web-flat-256.png
 test -f ./dist/connected-web-flat-512.png
+test -f ./dist/connected-web-maskable-large.png
+test -f ./dist/connected-web-maskable-192.png
+test -f ./dist/connected-web-maskable-512.png
 test -f ./dist/manifest.json
 
 node --input-type=module <<'NODE'
@@ -39,7 +42,10 @@ const requiredKeys = [
   'flat64',
   'flat128',
   'flat256',
-  'flat512'
+  'flat512',
+  'maskableLarge',
+  'maskable192',
+  'maskable512'
 ];
 for (const key of requiredKeys) {
   if (!manifest.assets[key]) {

@@ -30,7 +30,10 @@
     "./connected-web-flat-64.png": "./dist/connected-web-flat-64.png",
     "./connected-web-flat-128.png": "./dist/connected-web-flat-128.png",
     "./connected-web-flat-256.png": "./dist/connected-web-flat-256.png",
-    "./connected-web-flat-512.png": "./dist/connected-web-flat-512.png"
+    "./connected-web-flat-512.png": "./dist/connected-web-flat-512.png",
+    "./connected-web-maskable-large.png": "./dist/connected-web-maskable-large.png",
+    "./connected-web-maskable-192.png": "./dist/connected-web-maskable-192.png",
+    "./connected-web-maskable-512.png": "./dist/connected-web-maskable-512.png"
   },
   "scripts": {
     "build": "node ./scripts/build.mjs",
