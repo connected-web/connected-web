@@ -12,6 +12,10 @@ export interface AssetMap {
   flat128: string;
   flat256: string;
   flat512: string;
+  maskableLarge: string;
+  maskable180: string;
+  maskable192: string;
+  maskable512: string;
 }
 
 export declare const assets: AssetMap;

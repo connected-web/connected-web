@@ -24,6 +24,12 @@ const baseAssets = [
     output: 'connected-web-flat-large.png',
     kind: 'image',
     variants: [32, 64, 128, 256, 512]
+  },
+  {
+    source: 'connected-web-gradient-large.png',
+    output: 'connected-web-maskable-large.png',
+    kind: 'maskable',
+    variants: [180, 192, 512]
   }
 ];
 
@@ -51,6 +57,38 @@ for (const asset of baseAssets) {
   const metadata = await sharp(buffer).metadata();
   const width = metadata.width ?? 0;
   const height = metadata.height ?? 0;
+
+  if (asset.kind === 'maskable') {
+    const canvasSize = Math.min(width, height);
+    const markSize = Math.round(canvasSize * 0.7);
+    const offset = Math.round((canvasSize - markSize) / 2);
+    const mark = await sharp(buffer)
+      .resize(markSize, markSize, { fit: 'contain', withoutEnlargement: true })
+      .png()
+      .toBuffer();
+
+    await sharp({
+      create: {
+        width: canvasSize,
+        height: canvasSize,
+        channels: 4,
+        background: '#e7f2fc'
+      }
+    })
+      .composite([{ input: mark, top: offset, left: offset }])
+      .png()
+      .toFile(outputPath);
+
+    manifest.assets.maskableLarge = asset.output;
+    for (const size of asset.variants ?? []) {
+      const resizedName = asset.output.replace('-large.png', `-${size}.png`);
+      const resizedPath = path.join(distDir, resizedName);
+
+      await sharp(outputPath).resize(size, size).png().toFile(resizedPath);
+      manifest.assets[`maskable${size}`] = resizedName;
+    }
+    continue;
+  }
 
   manifest.assets[`${name}Large`] = asset.output;
 
